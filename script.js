@@ -1,63 +1,108 @@
-$(document).ready(function() {
-    // Function to add a bug
-    $('#bug-form').on('submit', function(e) {
-        e.preventDefault();
+let bugs = JSON.parse(localStorage.getItem("bugs")) || [];
+let editIndex = -1;
 
-        const bugName = $('#bug-name').val();
-        const bugDescription = $('#bug-description').val();
-        const bugCategory = $('#bug-category').val();
+const bugForm = document.getElementById("bug-form");
+const bugName = document.getElementById("bug-name");
+const bugDescription = document.getElementById("bug-description");
+const bugCategory = document.getElementById("bug-category");
+const bugList = document.getElementById("bug-list");
+const filterCategory = document.getElementById("filter-category");
+const filterStatus = document.getElementById("filter-status");
 
-        if (bugName && bugDescription) {
-            const bugItem = `
-                <li class="list-group-item bug-item">
-                    <div>
-                        <strong>${bugName}</strong><br>
-                        <small>${bugDescription}</small><br>
-                        <span class="badge bg-secondary">${bugCategory}</span>
-                    </div>
-                    <div>
-                        <button class="status-btn open">Open</button>
-                        <button class="delete-btn">Delete</button>
-                    </div>
-                </li>`;
+function saveBugs() {
+  localStorage.setItem("bugs", JSON.stringify(bugs));
+}
 
-            $('#bug-list').append(bugItem);
+function renderBugs() {
+  bugList.innerHTML = "";
 
-            // Clear the form
-            $('#bug-name').val('');
-            $('#bug-description').val('');
-        }
-    });
+  const categoryFilter = filterCategory.value;
+  const statusFilter = filterStatus.value;
 
-    // Toggle status (Open/Closed)
-    $('#bug-list').on('click', '.status-btn', function() {
-        if ($(this).hasClass('open')) {
-            $(this).removeClass('open').addClass('closed').text('Closed');
-        } else {
-            $(this).removeClass('closed').addClass('open').text('Open');
-        }
-    });
+  bugs.forEach((bug, index) => {
+    if (
+      (categoryFilter === "All" || bug.category === categoryFilter) &&
+      (statusFilter === "All" || bug.status === statusFilter)
+    ) {
+      const li = document.createElement("li");
+      li.className = "list-group-item";
 
-    // Delete a bug
-    $('#bug-list').on('click', '.delete-btn', function() {
-        $(this).closest('.bug-item').remove();
-    });
+      li.innerHTML = `
+        <strong>${bug.name}</strong><br/>
+        ${bug.description}<br/>
+        <span class="badge bg-secondary">${bug.category}</span><br/>
+        ${new Date(bug.timestamp).toLocaleString()}
+        <div class="mt-2">
+          <button class="btn btn-success btn-sm me-2 status-btn">${bug.status}</button>
+          <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
+          <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+        </div>
+      `;
 
-    // Filter bugs by category or status
-    $('#filter-category, #filter-status').on('change', function() {
-        const categoryFilter = $('#filter-category').val();
-        const statusFilter = $('#filter-status').val();
+      // Status button
+      li.querySelector(".status-btn").addEventListener("click", () => {
+        bug.status = bug.status === "Open" ? "Closed" : "Open";
+        saveBugs();
+        renderBugs();
+      });
 
-        $('#bug-list .bug-item').each(function() {
-            const bugCategory = $(this).find('.badge').text();
-            const bugStatus = $(this).find('.status-btn').text();
+      // Edit button
+      li.querySelector(".edit-btn").addEventListener("click", () => {
+        bugName.value = bug.name;
+        bugDescription.value = bug.description;
+        bugCategory.value = bug.category;
+        editIndex = index;
+        bugForm.querySelector("button").textContent = "Update Bug";
+      });
 
-            if ((categoryFilter === 'All' || categoryFilter === bugCategory) &&
-                (statusFilter === 'All' || statusFilter === bugStatus)) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    });
+      // Delete button
+      li.querySelector(".delete-btn").addEventListener("click", () => {
+        bugs.splice(index, 1);
+        saveBugs();
+        renderBugs();
+      });
+
+      bugList.appendChild(li);
+    }
+  });
+}
+
+// Submit form (Add or Edit)
+bugForm.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const name = bugName.value.trim();
+  const description = bugDescription.value.trim();
+  const category = bugCategory.value;
+
+  if (editIndex > -1) {
+    bugs[editIndex] = {
+      ...bugs[editIndex],
+      name,
+      description,
+      category,
+    };
+    editIndex = -1;
+    bugForm.querySelector("button").textContent = "Add Bug";
+  } else {
+    const newBug = {
+      name,
+      description,
+      category,
+      status: "Open",
+      timestamp: new Date().toISOString(),
+    };
+    bugs.push(newBug);
+  }
+
+  saveBugs();
+  renderBugs();
+  bugForm.reset();
 });
+
+// Filters
+filterCategory.addEventListener("change", renderBugs);
+filterStatus.addEventListener("change", renderBugs);
+
+// Initial render
+renderBugs();
