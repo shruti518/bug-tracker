@@ -1,48 +1,35 @@
 body {
+    background-color: #ebff91;
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-}
-
-.container {
-    max-width: 600px;
 }
 
 .bug-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
-.bug-item p {
-    margin: 0;
+.status-btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-right: 5px;
+    border: none;
+    color: #fff;
+}
+
+.status-btn.open {
+    background-color: #28a745;
+}
+
+.status-btn.closed {
+    background-color: #6c757d;
 }
 
 .delete-btn {
     background-color: #dc3545;
     color: white;
     padding: 5px 10px;
+    border-radius: 4px;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.delete-btn:hover {
-    background-color: #c82333;
-}
-
-.status-btn {
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.status-btn.open {
-    background-color: #28a745;
-    color: white;
-}
-
-.status-btn.closed {
-    background-color: #6c757d;
-    color: white;
 }
