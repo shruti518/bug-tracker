@@ -28,34 +28,39 @@ function renderBugs() {
       li.className = "list-group-item";
 
       li.innerHTML = `
-        <strong>${bug.name}</strong><br/>
-        ${bug.description}<br/>
-        <span class="badge bg-secondary">${bug.category}</span><br/>
-        ${new Date(bug.timestamp).toLocaleString()}
-        <div class="mt-2">
-          <button class="btn btn-success btn-sm me-2 status-btn">${bug.status}</button>
-          <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
-          <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+        <div class="bug-item">
+          <div>
+            <strong>${bug.name}</strong><br/>
+            ${bug.description}<br/>
+            <span class="badge bg-secondary">${bug.category}</span><br/>
+            <small>${new Date(bug.timestamp).toLocaleString()}</small>
+          </div>
+          <div class="mt-2">
+            <button class="status-btn btn btn-sm me-2 ${bug.status.toLowerCase()}">${bug.status}</button>
+            <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
+            <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+          </div>
         </div>
       `;
 
-      // Status button
+      // Status Toggle
       li.querySelector(".status-btn").addEventListener("click", () => {
         bug.status = bug.status === "Open" ? "Closed" : "Open";
         saveBugs();
         renderBugs();
       });
 
-      // Edit button
+      // Edit
       li.querySelector(".edit-btn").addEventListener("click", () => {
         bugName.value = bug.name;
         bugDescription.value = bug.description;
         bugCategory.value = bug.category;
         editIndex = index;
         bugForm.querySelector("button").textContent = "Update Bug";
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
-      // Delete button
+      // Delete
       li.querySelector(".delete-btn").addEventListener("click", () => {
         bugs.splice(index, 1);
         saveBugs();
@@ -74,6 +79,11 @@ bugForm.addEventListener("submit", function (e) {
   const name = bugName.value.trim();
   const description = bugDescription.value.trim();
   const category = bugCategory.value;
+
+  if (!name || !description) {
+    alert("Please fill in both the bug name and description.");
+    return;
+  }
 
   if (editIndex > -1) {
     bugs[editIndex] = {
